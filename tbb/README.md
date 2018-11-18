@@ -1,5 +1,5 @@
 ## 01 - SAXPY
-Implementation of the scaled vector addition of single-precision floating point data operation.
+Implementation of the *scaled vector addition of single-precision floating point data* operation.
 
 #### Requirements
 The Intel TBB library is required.
@@ -18,15 +18,13 @@ The application can be run as ```./main``` without parameters.
 <br>
 
 ## 02 - Mandelbrot Set
-Implementation of the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set), i.e. the set of all points ```c``` in the complex plane that do not go to infinity when the quadratic function ```z ← z^2 + c``` is iterated. <ul><li><b>Version 1:</b> the frames containing the representation of the Mandelbrot set have been drawn by using the [SDL2](https://wiki.libsdl.org/) library.
+Implementation of the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set), i.e. the set of all points ```c``` in the complex plane that do not go to infinity when the quadratic function ```z ← z^2 + c``` is iterated. <ul><li><b>Version 1:</b> sequential implementation that uses the [SDL2](https://wiki.libsdl.org/) library to draw in a separated window all the images produced by iterating the Mandelbrot set computation.
 #### Requirements
-Both the Intel TBB and SDL2 libraries are required.
+The SDL2 library is required.
 #### Compile and run
-A Makefile has been provided. The application can be run as
-
-```./main par_deg```
-
-where ```par_deg = 0``` means sequential execution.</li><li><b>Version 2:</b> a single image of the Mandelbrot set is produced as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
+A Makefile has been provided. The application can be run as ```./main``` without parameters.
+#### Interaction with the application
+The user can terminate the process by closing the window or by pressing ```q``` on the keyboard to quit.</li><li><b>Version 2:</b> a single image of the Mandelbrot set is produced as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
 #### Requirements
 The Intel TBB library is required.
 #### Compile and run

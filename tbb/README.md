@@ -20,8 +20,7 @@ The application can be run as ```./main``` without parameters.
 ## 02 - Mandelbrot Set
 Implementation of the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set), i.e. the set of all points ```c``` in the complex plane that do not go to infinity when the quadratic function ```z ← z^2 + c``` is iterated. <ul>
 <li>
-### Version 1
-The [SDL2](https://wiki.libsdl.org/) library has been used to draw the Mandelbrot set.
+<b>Version 1:</b> the frames containing the representation of the Mandelbrot set have been drawn by using the [SDL2](https://wiki.libsdl.org/) library.
 
 #### Requirements
 Both the Intel TBB and SDL2 libraries are required.
@@ -34,8 +33,7 @@ A Makefile has been provided. The application can be run as
 where ```par_deg = 0``` means sequential execution.
 </li>
 <li>
-### Version 2
-The Mandelbrot set image is produced as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
+<b>Version 2:</b> a single image of the Mandelbrot set is produced as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
 
 #### Requirements
 The Intel TBB library is required.

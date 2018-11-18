@@ -252,35 +252,14 @@ private:
         long double c_real = a;     // Coordinates of the point in the complex plane.
         long double c_imag = b;
 
-        // Iterate until max_iter number if iterations is reached or the computation diverges.
+        // Iterate until max_iter number of iterations is reached or the computation diverges.
         for (int i = 0; i < max_iter; ++i) {
-
-            /*
-             * Mandelbrot formula
-             *
-             * z(0) = 0
-             * c = a + bi (initial point)
-             *
-             * ITERATION 1:
-             * z(1) = 0 + c = a + bi
-             *
-             * z(1).real = a
-             * z(1).imag = b
-             *
-             * ITERATION n > 1:
-             * z^2 = (a + bi)^2 = a^2 - b^2 + 2ab
-             *
-             * z(n).real = a^2 - b^2 + c.real = a^2 - b^2 + a   (new value of a)
-             * z(n).img = 2ab + c.imag = 2ab + b                (new value of b)
-             *
-             */
-
+            
             long double temp_a = a * a - b * b;
             long double temp_b = 2 * a * b;
             a = temp_a + c_real;
             b = temp_b + c_imag;
 
-            //if (a + b > 2) break;
             if (a * a + b * b > 4) break;
             count++;
         }

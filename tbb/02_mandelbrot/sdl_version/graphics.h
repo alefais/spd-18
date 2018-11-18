@@ -66,7 +66,6 @@ public:
 
                 for (int y = 0; y < height; ++y) {
 
-                    // Map (x, y) values into window coordinates.
                     long double a = screen_coord_map(x, 0, width, min, max);
                     long double b = screen_coord_map(y, 0, height, min, max);
 
@@ -77,7 +76,6 @@ public:
                 }
             }
 
-            // Number of iterations.
             count++;
         }
 
@@ -104,28 +102,8 @@ private:
         long double c_real = a;     // Coordinates of the point in the complex plane.
         long double c_imag = b;
 
-        // Iterate until max_iter number if iterations is reached or the computation diverges.
-        for (int i = 0; (i < max_iter) && ((a + b) < 2); ++i) {
-
-            /*
-             * Mandelbrot formula
-             *
-             * z(0) = 0
-             * c = a + bi (initial point)
-             *
-             * ITERATION 1:
-             * z(1) = 0 + c = a + bi
-             *
-             * z(1).real = a
-             * z(1).imag = b
-             *
-             * ITERATION n > 1:
-             * z^2 = (a + bi)^2 = a^2 - b^2 + 2ab
-             *
-             * z(n).real = a^2 - b^2 + c.real = a^2 - b^2 + a   (new value of a)
-             * z(n).img = 2ab + c.imag = 2ab + b                (new value of b)
-             *
-             */
+        // Iterate until max_iter number of iterations is reached or the computation diverges.
+        for (int i = 0; (i < max_iter) && ((a * a + b * b) < 4); ++i) {
 
             long double temp_a = a * a - b * b;
             long double temp_b = 2 * a * b;
@@ -148,10 +126,6 @@ private:
 
     }
 
-    /*
-     * The number of iterations determines the color of the pixel, until infinity is reached
-     * (until the length of the vector z becomes greater than 2, i.e. its square value becomes greater than 4)
-     */
     void draw_pixel(int color, int x, int y, SDL_Renderer *renderer) {
         int bright = screen_coord_map(color, 0, max_iter, 0, 255); // Pixel brightness.
 
@@ -159,7 +133,7 @@ private:
             bright = 0;
         }
 
-        int red = screen_coord_map(bright * bright, 0, 6502, 0, 255); // 255 * 255
+        int red = screen_coord_map(bright * bright, 0, 6502, 0, 255);
         int green = bright;
         int blue = screen_coord_map(std::sqrt(bright), 0, std::sqrt(255), 0, 255);
 

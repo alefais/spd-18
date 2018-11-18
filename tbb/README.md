@@ -18,7 +18,7 @@ The application can be run as ```./main``` without parameters.
 <br>
 
 ## 02 - Mandelbrot Set
-Implementation of the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set), i.e. the set of all points c in the complex plane for wich the quadratic function z = z<sup>2</sup> + c does not go to infinity when iterated from z = 0. <ul><li><b>Version 1:</b> sequential implementation that uses the [SDL2](https://wiki.libsdl.org/) library to draw in a separated window all the images produced by iterating the Mandelbrot set computation.
+Implementation of the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set), i.e. the set of all points c in the complex plane for which the quadratic function z = z<sup>2</sup> + c does not go to infinity when iterated from z = 0. <ul><li><b>Version 1:</b> sequential implementation that uses the [SDL2](https://wiki.libsdl.org/) library to draw in a separated window all the images produced by iterating the Mandelbrot set computation.
 #### Requirements
 The SDL2 library is required.
 #### Compile and run

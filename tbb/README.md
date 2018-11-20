@@ -25,7 +25,7 @@ The SDL2 library is required.
 #### Compile and run
 A Makefile has been provided. The application can be run as ```./main``` without parameters.
 #### Interaction with the application
-The user can terminate the process by closing the window or by pressing ```q``` on the keyboard to quit.</li><li><b>Exercise 2:</b> sequential and parallel implementation with TBB ```parallel_for``` of the Mandelbrot set computation. A plot is generated as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
+The user can terminate the process by closing the window or by pressing ```q``` on the keyboard to quit.</li><li><b>Exercise 2:</b> sequential and parallel implementation with ```tbb::parallel_for``` of the Mandelbrot set computation. A plot is generated as [.ppm](http://paulbourke.net/dataformats/ppm/) file.
 #### Requirements
 The Intel TBB library is required.
 #### Compile and run
@@ -33,4 +33,12 @@ A Makefile has been provided. The application can be run as
 
 ```./main par_deg```
 
-where ```par_deg = 0``` means sequential execution and ```par_deg > 0``` means parallel execution.</li><li><b>Exercise 3:</b> parallel implementation of the Mandelbrot set computation that exploits ```tbb::parallel_for``` construct using in one case the default number of threads and in another case only one thread. This is done by setting the appropriate parameters of the [```tbb::task_scheduler_init```](https://www.threadingbuildingblocks.org/docs/doxygen/a00150.html) class.</li></ul>
+where ```par_deg = 0``` means sequential execution and ```par_deg > 0``` means parallel execution.</li><li><b>Exercise 3:</b> parallel implementation of the Mandelbrot set computation that exploits ```tbb::parallel_for``` construct using in one case the default number of threads and in another case only one thread. This is done by setting the appropriate parameters of the [```tbb::task_scheduler_init```](https://www.threadingbuildingblocks.org/docs/doxygen/a00150.html) class.
+#### Requirements
+The Intel TBB library is required.
+#### Compile and run
+A Makefile has been provided. The application can be run as
+
+```./main width height max_iter```
+
+where ```width``` and ```height``` are the dimensions of the matrix and ```max_iter``` is the maximum number of iterations for the computation.</li></ul>

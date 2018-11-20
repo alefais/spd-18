@@ -33,9 +33,9 @@ A Makefile has been provided. The application can be run as
 
 ```./main par_deg```
 
-where ```par_deg = 0``` means sequential execution and ```par_deg > 0``` means parallel execution.</li><li><b>Exercise 3:</b> parallel implementation of the Mandelbrot set computation that exploits ```tbb::parallel_for``` construct using in one case the default number of threads and in another case only one thread. This is done by setting the appropriate parameters of the [```tbb::task_scheduler_init```](https://software.intel.com/en-us/node/506296) class.
+where ```par_deg = 0``` means sequential execution and ```par_deg > 0``` means parallel execution.</li><li><b>Exercise 3:</b> parallel implementation of the Mandelbrot set computation that exploits ```tbb::parallel_for``` construct using in one case the default number of threads and in another case only one thread. This is done by setting the appropriate parameters of the [```tbb::task_scheduler_init```](https://www.threadingbuildingblocks.org/docs/doxygen/a00150.html) class.
 <!--
-Other info here: https://www.threadingbuildingblocks.org/docs/doxygen/a00150.html
+Other info here: https://software.intel.com/en-us/node/506296
 -->
 #### Requirements
 The Intel TBB library is required.

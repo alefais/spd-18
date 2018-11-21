@@ -44,4 +44,4 @@ A Makefile has been provided. The application can be run as
 
 ```./main width height max_iter```
 
-where ```width``` and ```height``` are the dimensions of the matrix and ```max_iter``` is the maximum number of iterations for the computation.</li></ul>
+where ```width``` and ```height``` are the dimensions of the matrix and ```max_iter``` is the maximum number of iterations for the computation.</li><li><b>Exercise 4:</b> extension of the previous exercise where an array of buckets (implemented as a [```tbb::concurrent_hash_map```](https://www.threadingbuildingblocks.org/docs/help/reference/containers_overview/concurrent_hash_map_cls.html)) has been used to count how many times a certain number of iterations shows up during the whole computation. Requirements, compilation and instructions to run the program are the same of <b>Exercise 3</b>.</li></ul>

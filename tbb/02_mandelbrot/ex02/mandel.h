@@ -47,7 +47,7 @@ public:
                     [&](const tbb::blocked_range<size_t>& r) {
 
                         for(size_t y = r.begin(); y != r.end(); ++y) {      // y = b
-                            for (size_t x = 0; y < matrix.n_cols(); ++x) {  // x = a
+                            for (size_t x = 0; x < matrix.n_cols(); ++x) {  // x = a
 
                                 // Map (x, y) values into window coordinates.
                                 long double a = map(x, 0, matrix.n_cols(), min, max);
@@ -282,7 +282,7 @@ private:
         float green = bright;
         float blue = map(sqrt(bright), 0, sqrt(255), 0, 255);
 
-        image[x + y * matrix.n_cols()] = Rgb(red, green, blue);
+        image[x + y * image.n_cols()] = Rgb(red, green, blue);
     }
 
     /*

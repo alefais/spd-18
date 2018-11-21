@@ -25,12 +25,13 @@ using namespace std;
 class MandelBrot {
 public:
     MandelBrot(const size_t& w, const size_t& h, const int& mi) :
-                matrix(w, h), max_iter(mi), min(-2.0), max(2.0), comp_time(-1) { }
+                matrix(w, h), max_iter(mi), min(-2.0), max(2.0),
+                comp_time(0), max_it(0), max_it_count(0) { }
 
-    void compute(int mode) {
-        if (mode == 0) {
+    void compute(int n_threads) {
+        if (n_threads == 1) {
             //tbb::task_scheduler_init init;  // Automatic number of threads
-            tbb::task_scheduler_init init(1);  // Explicit number of threads
+            tbb::task_scheduler_init init(n_threads);  // Explicit number of threads
 
             std::vector<tbb_task> tasks;
             for (size_t y = 0; y < matrix.h; ++y) {
@@ -41,12 +42,21 @@ public:
 
             tbb::parallel_for(
                     tbb::blocked_range<size_t>(0, tasks.size()),
-                    [&tasks](const tbb::blocked_range<size_t>& r) {
-                        for (size_t i = r.begin(); i < r.end(); ++i)
+                    [&](const tbb::blocked_range<size_t>& r) {
+                        for (size_t i = r.begin(); i < r.end(); ++i) {
+                            auto ta = std::chrono::high_resolution_clock::now();
                             tasks[i]();
+                            auto tb = std::chrono::high_resolution_clock::now();
+                            comp_time += std::chrono::duration_cast<std::chrono::microseconds>(tb - ta).count();
+                        }
                     });
+            // Save image.
             string filename("mandel_1.ppm");
             save_img(matrix.w, matrix.h, filename.c_str(), matrix.unrol(), 255);
+
+            // Estimate computation time: sum of the times required to execute each task (only one thread!).
+            comp_time *= 0.000001; // microseconds to seconds
+
         } else {
             tbb::parallel_for(
                     tbb::blocked_range<size_t >(0, matrix.h),
@@ -55,7 +65,7 @@ public:
                         for(size_t y = r.begin(); y != r.end(); ++y) {
                             for (size_t x = 0; x < matrix.w; ++x) {
 
-                                tbb::tick_count t1 = tbb::tick_count::now();
+                                auto ta = std::chrono::high_resolution_clock::now();
 
                                 long double a = x * (max - min) / matrix.w + min;
                                 long double b = y * (max - min) / matrix.h + min;
@@ -72,19 +82,30 @@ public:
                                     acc->second += 1;
                                 acc.release();
 
-                                if (iter == max_iter) {
-                                    tbb::tick_count t2 = tbb::tick_count::now();
-                                    comp_time = (t2 - t1).seconds();
+                                if (iter == max_iter && comp_time == -1) {
+                                    auto tb = std::chrono::high_resolution_clock::now();
+                                    comp_time = std::chrono::duration_cast<std::chrono::microseconds>(tb - ta).count();
                                 }
                             }
                         }
                     }
             );
+            // Save image.
             string filename("mandel_n.ppm");
             save_img(matrix.w, matrix.h, filename.c_str(), matrix.unrol(), 255);
+
+            // Estimate computation time:
+            // the whole computation is unbalanced, consider the number of tasks corresponding to the
+            // heavier computations (max_iter iterations).
+            double op_time = comp_time * 0.000001; // microseconds to seconds
+            max_iter_counter();
+            comp_time = (max_it_count * op_time) / n_threads ;
         }
     }
 
+    /*
+     * Print the matrix as 2D vector.
+     */
     void print_matrix() {
         std::stringstream ss;
         for (size_t x = 0; x < matrix.h; ++x) {
@@ -97,6 +118,9 @@ public:
         cout << "Matrix:\n" << ss.str();
     }
 
+    /*
+     * Print the matrix as 1D vector.
+     */
     void print_unrolled_matrix() {
         int* u_matrix = matrix.unrol();
         std::stringstream ss;
@@ -110,33 +134,29 @@ public:
         cout << "U_matrix:\n" << ss.str();
     }
 
+    /*
+     * Print the table containing the iteration counters.
+     */
     void print_table() {
-        int max_it = 0;
-        int max_it_counter = 0;
         std::stringstream ss;
         for (IterTable::const_iterator it = table.begin(); it != table.end() ; ++it) {
-            if (it->first > max_it) {
-                max_it = it->first;
-                max_it_counter = it->second;
-            }
             ss << "<" << it->first << ", " << it->second << ">\n";
         }
-        cout //<< "Table:\n" << ss.str()
-             << "Max number of iterations is "
-             << max_it
-             << " and has been computed for "
-             << max_it_counter
-             << " times.\n";
+        cout << "Table:\n" << ss.str();
     }
 
-    void print_time(int max_it, int max_it_counter) {
-        if (max_iter == max_it) {
-            cout << "The computation time for "
-                 << max_iter
-                 << " iterations is estimated as "
-                 << (comp_time)
-                 << " s.\n";
-        }
+    /*
+     * Print the estimated time for the computation.
+     */
+    void estimated_time() {
+        cout << "Max number of iterations is "
+             << max_it
+             << " and has been computed for "
+             << max_it_count
+             << " times.\n"
+             << "The estimated computation time is "
+             << comp_time
+             << " microseconds.\n";
     }
 
 private:
@@ -200,6 +220,8 @@ private:
     IterTable table;
 
     double comp_time;
+    int max_it;
+    int max_it_count;
 
     // ------------------------------------ Auxiliary Methods -----------------------------------
 
@@ -269,4 +291,17 @@ private:
         int max_iter;
         IterTable& table;
     };
+
+    /*
+     * Evaluates the maximum number of iterations produced during the computation
+     * and the number of occurrences in the final matrix.
+     */
+    void max_iter_counter() {
+        for (IterTable::const_iterator it = table.begin(); it != table.end() ; ++it) {
+            if (it->first > max_it) {
+                max_it = it->first;
+                max_it_count = it->second;
+            }
+        }
+    }
 };

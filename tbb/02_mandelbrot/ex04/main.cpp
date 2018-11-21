@@ -5,7 +5,9 @@
  */
 
 #include <iostream>
+#include <thread>
 #include "tbb/tick_count.h"
+
 #include "mandel.h"
 
 int main(int argc, char* argv[]) {
@@ -22,29 +24,34 @@ int main(int argc, char* argv[]) {
     int height = atoi(argv[2]);
     int max_iter = atoi(argv[3]);
 
-    MandelBrot mb(width, height, max_iter);
+    MandelBrot mb1(width, height, max_iter);
 
     std::cout << "Mandelbrot parallel_for execution takes ";
     tbb::tick_count t0 = tbb::tick_count::now();
 
-    mb.compute(1);
+    int hw_threads = tbb::task_scheduler_init::default_num_threads();
+    mb1.compute(hw_threads);
 
     tbb::tick_count t1 = tbb::tick_count::now();
     double t = (t1 - t0).seconds();
-    std::cout << t << " s with " << tbb::task_scheduler_init::default_num_threads() << " threads." << std::endl;
+    std::cout << t << " s with " << hw_threads << " threads." << std::endl;
 
-    mb.print_table();
+    mb1.estimated_time();
+    std::cout << std::endl;
+
+    MandelBrot mb2(width, height, max_iter);
 
     std::cout << "Mandelbrot parallel_for execution takes ";
     tbb::tick_count t2 = tbb::tick_count::now();
 
-    mb.compute(0);
+    mb2.compute(1);
 
     tbb::tick_count t3 = tbb::tick_count::now();
     t = (t3 - t2).seconds();
     std::cout << t << " s with 1 thread." << std::endl;
 
-    mb.print_table();
+    mb2.estimated_time();
+    std::cout << std::endl;
 
     return 0;
 }

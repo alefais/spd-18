@@ -16,6 +16,7 @@
 #include "tbb/blocked_range.h"
 #include "tbb/task_scheduler_init.h"
 
+#include "image.h"
 
 using namespace tbb;
 using namespace std;
@@ -25,19 +26,15 @@ public:
     MandelBrot(const size_t& w, const size_t& h, const int& mi) :
                 matrix(w, h), max_iter(mi), min(-2.0), max(2.0) { }
 
-    long double* get_matrix() {
-        return matrix.get();
-    }
+    void compute(int n_threads) {
 
-    void compute(int mode) {
-
-        if (mode == 0) {
-
+        if (n_threads == 1) {
+            //tbb::task_scheduler_init init;  // Automatic number of threads
             tbb::task_scheduler_init init(1);  // Explicit number of threads
 
             std::vector<tbb_task> tasks;
-            for (size_t x = 0; x < matrix.n_cols(); ++x) {
-                for (size_t y = 0; y < matrix.n_rows(); ++y) {
+            for (size_t y = 0; y < matrix.h; ++y) {
+                for (size_t x = 0; x < matrix.w; ++x) {
                     tasks.push_back(tbb_task(x, y, matrix, min, max, max_iter));
                 }
             }
@@ -49,35 +46,65 @@ public:
                             tasks[i]();
                     });
 
+            // Save image.
+            string filename("mandel_1.ppm");
+            save_img(matrix.w, matrix.h, filename.c_str(), matrix.unrol(), 255);
+
         } else {
             tbb::parallel_for(
-                    tbb::blocked_range<size_t >(0, matrix.n_cols()),
+                    tbb::blocked_range<size_t >(0, matrix.h),
                     [&](const tbb::blocked_range<size_t>& r) {
 
-                        for(size_t x = r.begin(); x != r.end(); ++x) {      // x = a
-                            for (size_t y = 0; y < matrix.n_rows(); ++y) {  // y = b
+                        for(size_t y = r.begin(); y != r.end(); ++y) {
+                            for (size_t x = 0; x < matrix.w; ++x) {
 
-                                long double a = x * (max - min) / matrix.n_cols() + min;
-                                long double b = y * (max - min) / matrix.n_rows() + min;
+                                // Map (x, y) values into window coordinates.
+                                long double a = x * (max - min) / matrix.w + min;
+                                long double b = y * (max - min) / matrix.h + min;
 
-                                matrix[x * y] = comp_pixel(a, b);   // Number of iterations required for (x, y).
+                                // Number of iterations required for (x, y).
+                                int iter = comp_pixel(a, b);
+                                matrix.m[y][x] = iter;
                             }
                         }
                     }
             );
+
+            // Save image.
+            string filename("mandel_n.ppm");
+            save_img(matrix.w, matrix.h, filename.c_str(), matrix.unrol(), 255);
         }
     }
 
+    /*
+     * Print the matrix as 2D vector.
+     */
     void print_matrix() {
         std::stringstream ss;
-        for (size_t x = 0; x < matrix.n_cols(); ++x) {
+        for (size_t x = 0; x < matrix.h; ++x) {
             ss << "| ";
-            for (size_t y = 0; y < matrix.n_rows(); ++y) {
-                ss << matrix[x * y] << " ";
+            for (size_t y = 0; y < matrix.w; ++y) {
+                ss << matrix.m[x][y] << " ";
             }
             ss << "|\n";
         }
         cout << "Matrix:\n" << ss.str();
+    }
+
+    /*
+     * Print the matrix as 1D vector.
+     */
+    void print_unrolled_matrix() {
+        int* u_matrix = matrix.unrol();
+        std::stringstream ss;
+        for (size_t y = 0; y < matrix.h; ++y) {
+            ss << "| ";
+            for (size_t x = 0; x < matrix.w; ++x) {
+                ss << u_matrix[y * matrix.w + x] << " ";
+            }
+            ss << "|\n";
+        }
+        cout << "U_matrix:\n" << ss.str();
     }
 
 private:
@@ -85,49 +112,33 @@ private:
     // --------------------------------------- Subclasses ---------------------------------------
 
     /*
-     * Matrix defined as array of doubles.
+     * Matrix class.
      */
     class Matrix {
     public:
 
-        Matrix(const size_t& _w, const size_t& _h) : w(_w), h(_h) {
-
-            m = new long double[w * h];
-            for (int i = 0; i < w * h; ++i)
-                m[i] = 0;
+        Matrix(const size_t& _w, const size_t& _h) : w(_w), h(_h), m(_h) {
+            for (size_t i = 0; i < h; ++i) {
+                vector<int> row(w);
+                m.at(i) = row;
+            }
         }
 
         Matrix(Matrix& matrix) {
-            m = matrix.get();
+            m = matrix.m;
         }
 
-        ~Matrix() {
-            if (m != nullptr)
-                delete [] m;
+        int* unrol() {
+            int* matrix = new int [h * w];
+            for (size_t y = 0; y < h; ++y) {
+                for (size_t x = 0; x < w; ++x) {
+                    matrix[y * w + x] = m[y][x];
+                }
+            }
+            return matrix;
         }
 
-        long double* get() {
-            return m;
-        }
-
-        size_t n_rows() {
-            return h;
-        }
-
-        size_t n_cols() {
-            return w;
-        }
-
-        const long double& operator [] (const size_t& i) const {
-            return m[i];
-        }
-
-        long double& operator [] (const size_t& i) {
-            return m[i];
-        }
-
-    private:
-        long double* m;
+        vector<vector<int>> m;
         size_t w, h;
     };
 
@@ -153,7 +164,6 @@ private:
 
         // Iterate until max_iter number if iterations is reached or the computation diverges.
         for (int i = 0; i < max_iter; ++i) {
-
             long double temp_a = a * a - b * b;
             long double temp_b = 2 * a * b;
             a = temp_a + c_real;
@@ -166,13 +176,16 @@ private:
         return count;
     }
 
+    /*
+     * Single TBB task.
+     */
     struct tbb_task {
         tbb_task(size_t _x, size_t _y, Matrix& m, long double _min, long double _max, int mi) :
             x(_x), y(_y), matrix(m), min(_min), max(_max), max_iter(mi) { }
 
         void operator()() {
-            long double a = x * (max - min) / matrix.n_cols() + min;
-            long double b = y * (max - min) / matrix.n_rows() + min;
+            long double a = x * (max - min) / matrix.w + min;
+            long double b = y * (max - min) / matrix.h + min;
 
             int count = 0;
             long double c_real = a;
@@ -186,7 +199,8 @@ private:
                 if (a * a + b * b > 4) break;
                 count++;
             }
-            matrix[x * y] = count;   // Number of iterations required for (x, y).
+            // Number of iterations required for (x, y).
+            matrix.m[y][x] = count;
         }
 
         size_t x, y;

@@ -18,4 +18,4 @@ clean:
 	rm -f $(OBJS)
 
 cleanall: clean
-	rm -f *.o *~
+	rm -f *.o *~ *.ppm

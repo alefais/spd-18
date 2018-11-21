@@ -24,100 +24,78 @@ public:
                 nw(par_deg), matrix(w, h), image(w, h), max_iter(mi),
                 min(-2.0), max(2.0) { }
 
-    long double* get_matrix() {
-        return matrix.get();
-    }
-
     void compute() {
         if (nw == 0) {  // Sequential implementation.
 
-            for (size_t x = 0; x < matrix.n_cols(); ++x) {      // x = a
-                for (size_t y = 0; y < matrix.n_rows(); ++y) {  // y = b
+            for (size_t y = 0; y < matrix.n_rows(); ++y) {      // y = b
+                for (size_t x = 0; x < matrix.n_cols(); ++x) {  // x = a
 
+                    // Map (x, y) values into window coordinates.
                     long double a = map(x, 0, matrix.n_cols(), min, max);
                     long double b = map(y, 0, matrix.n_rows(), min, max);
 
-                    matrix[x * y] = comp_pixel(a, b);   // Number of iterations required for (x, y).
+                    int iter = comp_pixel(a, b);   // Number of iterations required for (x, y).
+                    matrix[x + y * matrix.n_cols()] = iter;
 
-                    draw_pixel(matrix[x * y], x, y);
+                    draw_pixel(iter, x, y);
                 }
             }
         } else {        // Parallel TBB implementation.
 
             tbb::parallel_for(
-                    tbb::blocked_range<size_t >(0, matrix.n_cols()),
+                    tbb::blocked_range<size_t >(0, matrix.n_rows()),
                     [&](const tbb::blocked_range<size_t>& r) {
 
-                        for(size_t x = r.begin(); x != r.end(); ++x) {      // x = a
-                            for (size_t y = 0; y < matrix.n_rows(); ++y) {  // y = b
+                        for(size_t y = r.begin(); y != r.end(); ++y) {      // y = b
+                            for (size_t x = 0; y < matrix.n_cols(); ++x) {  // x = a
 
+                                // Map (x, y) values into window coordinates.
                                 long double a = map(x, 0, matrix.n_cols(), min, max);
                                 long double b = map(y, 0, matrix.n_rows(), min, max);
 
-                                matrix[x * y] = comp_pixel(a, b);   // Number of iterations required for (x, y).
+                                int iter = comp_pixel(a, b);   // Number of iterations required for (x, y).
+                                matrix[x + y * matrix.n_cols()] = iter;
 
-                                draw_pixel(matrix[x * y], x, y);
+                                draw_pixel(iter, x, y);
                             }
 
                         }
                     }
             );
         }
+        string filename("mandel.ppm");
+        save_img(filename);
     }
 
+    /*
+     * Print the matrix as 2D vector.
+     */
     void print_matrix() {
         std::stringstream ss;
-        for (size_t x = 0; x < matrix.n_cols(); ++x) {
+        for (size_t y = 0; y < matrix.n_rows(); ++y) {
             ss << "| ";
-            for (size_t y = 0; y < matrix.n_rows(); ++y) {
-                ss << matrix[x * y] << " ";
+            for (size_t x = 0; x < matrix.n_cols(); ++x) {
+                ss << matrix[x + y * matrix.n_cols()] << " ";
             }
             ss << "|\n";
         }
         cout << "Matrix:\n" << ss.str();
     }
 
+    /*
+     * Print the image as 2D vector.
+     */
     void print_image() {
         std::stringstream ss;
-        for (size_t x = 0; x < image.n_cols(); ++x) {
+        for (size_t y = 0; y < matrix.n_rows(); ++y) {
             ss << "| ";
-            for (size_t y = 0; y < image.n_rows(); ++y) {
-                image[x * y].operator<<(ss);
+            for (size_t x = 0; x < matrix.n_cols(); ++x) {
+                image[x + y * matrix.n_cols()].operator<<(ss);
                 ss << " ";
             }
             ss << "|\n";
         }
         cout << "Image:\n" << ss.str();
-    }
-
-    void save_img(const string& filename) {
-        if (image.n_rows() == 0 || image.n_cols() == 0) {
-            cerr << "Can't save an empty image\n";
-            return;
-        }
-
-        ofstream ofs;
-        try {
-            ofs.open(filename.c_str(), ios::binary);
-            if (ofs.fail())
-                throw("Can't open output file");
-
-            ofs << "P6\n" << image.n_cols() << " " << image.n_rows() << "\n255\n";
-
-            // Loop over each pixel in the image and convert to byte format.
-            unsigned char r, g, b;
-            for (int i = 0; i < image.n_cols() * image.n_rows(); ++i) {
-                r = static_cast<unsigned char>(image[i].r);
-                g = static_cast<unsigned char>(image[i].g);
-                b = static_cast<unsigned char>(image[i].b);
-                ofs << r << g << b;
-            }
-            ofs.close();
-        }
-        catch (const char* err) {
-            cerr << err << endl;
-            ofs.close();
-        }
     }
 
 private:
@@ -140,10 +118,6 @@ private:
         ~Matrix() {
             if (m != nullptr)
                 delete [] m;
-        }
-
-        long double* get() {
-            return m;
         }
 
         size_t n_rows() {
@@ -252,9 +226,29 @@ private:
         long double c_real = a;     // Coordinates of the point in the complex plane.
         long double c_imag = b;
 
-        // Iterate until max_iter number of iterations is reached or the computation diverges.
+        // Iterate until max_iter number if iterations is reached or the computation diverges.
         for (int i = 0; i < max_iter; ++i) {
-            
+
+            /*
+             * Mandelbrot formula
+             *
+             * z(0) = 0
+             * c = a + bi (initial point)
+             *
+             * ITERATION 1:
+             * z(1) = 0 + c = a + bi
+             *
+             * z(1).real = a
+             * z(1).imag = b
+             *
+             * ITERATION n > 1:
+             * z^2 = (a + bi)^2 = a^2 - b^2 + 2ab
+             *
+             * z(n).real = a^2 - b^2 + c.real = a^2 - b^2 + a   (new value of a)
+             * z(n).img = 2ab + c.imag = 2ab + b                (new value of b)
+             *
+             */
+
             long double temp_a = a * a - b * b;
             long double temp_b = 2 * a * b;
             a = temp_a + c_real;
@@ -280,14 +274,47 @@ private:
     void draw_pixel(long double color, long double x, long double y) {
         float bright = map(color, 0, max_iter, 0, 255); // Pixel brightness.
 
-        if (color == max_iter || bright < 20) {
+        if (color == max_iter /*|| bright < 20*/) {
             bright = 0;
         }
 
-        float red = map(bright * bright, 0, 255 * 255, 0, 255);
+        float red = map(bright * bright, 0, 6502, 0, 255); // 6502 violet color, 255 * 255 blue color
         float green = bright;
         float blue = map(sqrt(bright), 0, sqrt(255), 0, 255);
 
-        image[x * y] = Rgb(red, green, blue);
+        image[x + y * matrix.n_cols()] = Rgb(red, green, blue);
+    }
+
+    /*
+     * Save the plot of the Mandelbrot set into a .ppm file.
+     */
+    void save_img(const string& filename) {
+        if (image.n_rows() == 0 || image.n_cols() == 0) {
+            cerr << "Can't save an empty image\n";
+            return;
+        }
+
+        ofstream ofs;
+        try {
+            ofs.open(filename.c_str(), ios::binary);
+            if (ofs.fail())
+                throw("Can't open output file");
+
+            ofs << "P6\n" << image.n_cols() << " " << image.n_rows() << "\n255\n";
+
+            // Loop over each pixel in the image and convert to byte format.
+            unsigned char r, g, b;
+            for (int i = 0; i < image.n_cols() * image.n_rows(); ++i) {
+                r = static_cast<unsigned char>(image[i].r);
+                g = static_cast<unsigned char>(image[i].g);
+                b = static_cast<unsigned char>(image[i].b);
+                ofs << r << g << b;
+            }
+            ofs.close();
+        }
+        catch (const char* err) {
+            cerr << err << endl;
+            ofs.close();
+        }
     }
 };

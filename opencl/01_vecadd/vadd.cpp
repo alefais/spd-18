@@ -110,8 +110,8 @@ int main(void)
 
         queue.finish();
 
-        double rtime = static_cast<double>(timer.getTimeMilliseconds()) / 1000.0;
-        printf("\nThe kernels ran in %lf seconds\n", rtime);
+        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        printf("\nThe kernels ran in %lf milliseconds\n", rtime);
 
         // Copy c vector from device to host.
         cl::copy(queue, d_c, begin(h_c), end(h_c));

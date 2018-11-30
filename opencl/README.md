@@ -32,7 +32,7 @@ A Makefile has been provided. The application can be run as ```./mult``` without
 <br>
 
 ## 04 - Optimized matrix multiplication
-Optimized version of the previous exercise where private memory is used to minimize memory movement costs improving the performance of the program. The grain size of the *kernel* computation is a row of the matrix ```C```. Two versions of the *kernel* have been provided: one is not optimized and each work-item works on the *global memory*, in the other each work-item copies its own row of ```A``` into *private memory*.
+Optimized version of the previous exercise where private memory is used to minimize memory movement costs improving the performance of the program. The grain size of the *kernel* computation is a row of the matrix ```C```. Two versions of the *kernel* have been provided: one is not optimized and each work-item works on the *global memory*, in the other each work-item copies its own row of ```A`` into *private memory*.
 
 #### Requirements
 The OpenCL framework is required.

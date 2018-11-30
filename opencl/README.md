@@ -20,14 +20,14 @@ A Makefile has been provided. The application can be run as ```./vadd``` without
 
 <br>
 
-## 03 -
-Implementation of
+## 03 - Multiplication of two matrices
+Implementation of matrix multiplication between two constant matrices.
 
 #### Requirements
 The OpenCL framework is required.
 
 #### Compile and run
-A Makefile has been provided. The application can be run as ```./vadd``` without paramenters.
+A Makefile has been provided. The application can be run as ```./mult``` without paramenters.
 
 <br>
 

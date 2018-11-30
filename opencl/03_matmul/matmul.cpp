@@ -11,7 +11,7 @@
 //           can make a quick test of the multiplication.
 //
 //  Usage:   The matrices are constant matrices, square and the order is
-//           set as a constant, ORDER (see mult.h).
+//           set as a constant, ORDER (see matmul.hpp).
 //
 //  Student: Alessandra Fais - SPD course @ UniPi
 //
@@ -23,25 +23,6 @@
 #include <err_code.h>
 #include "device_picker.hpp"
 
-std::string kernelsource = "__kernel void m_mul(                                    \n" \
-                           "   const int N,                                         \n" \
-                           "   __global float* A,                                   \n" \
-                           "   __global float* B,                                   \n" \
-                           "   __global float* C)                                   \n" \
-                           "{                                                       \n" \
-                           "    int k;                                              \n" \
-                           "    float tmp;                                          \n" \
-                           "    int i = get_global_id(0);                           \n" \
-                           "    int j = get_global_id(1);                           \n" \
-                           "    if (i < N && j < N) {                               \n" \
-                           "        tmp = 0.0f;                                     \n" \
-                           "        for (k = 0; k < N; k ++) {                      \n" \
-                           "            tmp += A[i * N + k] * B[k * N + j];         \n" \
-                           "        }                                               \n" \
-                           "        C[i * N + j] = tmp;                             \n" \
-                           "    }                                                   \n" \
-                           "}                                                       \n" \
-                           "\n";
 
 int main(int argc, char* argv[]) {
 
@@ -127,7 +108,7 @@ int main(int argc, char* argv[]) {
         timer.reset();
 
         // Create the compute program from the source buffer.
-        cl::Program program(context, kernelsource, true);
+        cl::Program program(context, util::loadProgram("m_mul.cl"), true);
 
         // Create the compute kernel from the program.
         cl::make_kernel<int, cl::Buffer, cl::Buffer, cl::Buffer> naive_m_mul(program, "m_mul");

@@ -5,6 +5,6 @@ Homework and final project of the Programming Tools for Parallel and Distributed
 | ---------- | ----------------------- | ----------- |
 | 1 | C, C++, MPI | Implementation based on [Message Passing Interface](https://www.mpich.org/) of: <ul><li>Ping pong programs and message passing between processes in a ring or in pipeline.</li><li>Exercises on datatypes.</li></ul> |
 | 2 | C++, TBB | Implementation based on [Intel Threading Building Blocks](https://www.threadingbuildingblocks.org/) library of: <ul><li>[SAXPY](https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_1) (Single-Precision A·X Plus Y) operation.</li><li>[Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set) computation.</li><li>K-means computation.</li></ul> |
-| 3 | C++, OpenCL | Implementation based on [OpenCL](https://www.khronos.org/opencl/) of: <ul><li>Vector addition operations.</li><li>Matrix multiplication operations.</li><br><b>NOTE:</b> the first exercises are the ones proposed in the [HandsOnOpenCL](https://github.com/HandsOnOpenCL/Exercises-Solutions) exercise section.</ul> |
+| 3 | C++, OpenCL | Implementation based on [OpenCL](https://www.khronos.org/opencl/) of: <ul><li>Vector addition operations.</li><li>Matrix multiplication operations.</li></ul><br><b>NOTE:</b> the first exercises are the ones proposed in the [HandsOnOpenCL](https://github.com/HandsOnOpenCL/Exercises-Solutions) tutorial. |
 
 ## Final project

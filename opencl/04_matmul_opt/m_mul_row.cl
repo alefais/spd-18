@@ -2,9 +2,16 @@
 //
 // Kernel:  m_mul
 //
-// Purpose: Compute the matrix multiplication
+// Purpose: Compute the matrix multiplication (only global memory is used and
+//          each work-item computes a full row of C)
 //
 //          C = A * B
+//
+//          Note: the global dimensions are 1024x1024 (the whole problem space),
+//                the local dimensions (of the work-group) are 128x128;
+//                global memory is visible to all the work-groups, local memory
+//                shared within a work-group, private memory is visible to the
+//                single work-item.
 //
 // Input:
 //          A and B constant float matrices of size N * N

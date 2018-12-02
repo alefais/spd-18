@@ -2,8 +2,11 @@
 //
 // Kernel:  m_mul
 //
-// Purpose: Compute the matrix multiplication (each work-item copies its row of
-//          A in the private memory)
+// Purpose: Compute the matrix multiplication (each work-item computes a full
+//          row of C; we have locality and reuse on the row of A since the same
+//          row is used to compute each C[i][j]; copying A[i] into the work-item
+//          private memory avoids the overhead of pulling it from global memory
+//          for each C[i][j]).
 //
 //          C = A * B
 //
@@ -29,10 +32,13 @@ __kernel void m_mul(
                 float tmp;
 
                 if (i < N) {
+
+                    // Copy the row of A into private memory.
                     for (k = 0; k < N; k++) {
                         A_copy[k] = A[i * N + k];
                     }
 
+                    // Use work-item private memory to access A element values.
                     for (j = 0; j < N; j++) {
                         tmp = 0.0f;
                         for (k = 0; k < N; k++) {

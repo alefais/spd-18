@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "Usage"
                   << argv[0]
-                  << " kernel   (0 EL, 1 ROW, 2 ROW_OPT, DEFAULT is EL)\n";
+                  << " kernel_type   (0 EL, 1 ROW, 2 ROW_OPT, DEFAULT is EL)\n";
         return EXIT_FAILURE;
     }
 
@@ -119,15 +119,22 @@ int main(int argc, char* argv[]) {
 
         // Create the compute program from the source buffer.
         cl::Program program(context, util::loadProgram("m_mul_el.cl"), true);
-        if (ker == ROW)
+        char s[1024];
+        sprintf(s, "\n===== OpenCL, matrix multiplication, C(i,j) per work item, order %d, single element =====\n", N);
+
+        if (ker == ROW) {
             cl::Program program(context, util::loadProgram("m_mul_row.cl"), true);
-        else if (ker == ROW_OPT)
+            sprintf(s, "\n===== OpenCL, matrix multiplication, C(i,j) per work item, order %d, single row =====\n", N);
+        }
+        else if (ker == ROW_OPT) {
             cl::Program program(context, util::loadProgram("m_mul_row_opt.cl"), true);
+            sprintf(s, "\n===== OpenCL, matrix multiplication, C(i,j) per work item, order %d, single row opt =====\n", N);
+        }
 
         // Create the compute kernel from the program.
         cl::make_kernel<int, cl::Buffer, cl::Buffer, cl::Buffer> naive_m_mul(program, "m_mul");
 
-        printf("\n===== OpenCL, matrix multiplication, C(i,j) per work item, order %d =====\n", N);
+        printf("%s", s);
 
         // Do the multiplication COUNT times.
         for (int i = 0; i < COUNT; i++) {

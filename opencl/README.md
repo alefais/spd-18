@@ -21,7 +21,7 @@ A Makefile has been provided. The application can be run as ```./vadd``` without
 <br>
 
 ## 03 - Multiplication of two matrices
-Implementation of matrix multiplication between two constant matrices. The grain size of the *kernel* computation is a single element of the matrix ```C```.
+Implementation of matrix multiplication between two constant matrices. Each work-item computes a single element of the matrix ```C``` and uses *global memory* only.
 
 #### Requirements
 The OpenCL framework is required.
@@ -31,28 +31,38 @@ A Makefile has been provided. The application can be run as ```./mult``` without
 
 <br>
 
-## 04 - Optimized matrix multiplication
-Optimized version of the previous exercise where private memory is used to minimize memory movement costs improving the performance of the program. The grain size of the *kernel* computation is a row of the matrix ```C```. Two versions of the *kernel* have been provided: one is not optimized and each work-item works on the *global memory*, in the other each work-item copies its own row of ```A``` into *private memory*.
+## 04 - Optimized matrix multiplication (use of private memory)
+Optimized version of the previous exercise where private memory is used to minimize memory movement costs improving the performance of the program. At first only the *global memory* has been used, either if each work-item computes a single element of ```C``` or if it computes a full row of ```C```. A first optimization of the *kernel* (the version in which a work-item computes one row of ```C```) exploits the properties of locality and reuse on a single row of A: for each element ```C[i][j]``` the whole row ```A[i]``` is used, so the work-item can copy it into its own *private memory* avoiding the overhead of pulling it from *global memory* for each ```C[i][j]``` computation. A second optimization comes from storing the columns of ```B``` into the *local memory* of the work-group since all the work-items of a work-group access the same columns of ```B```.
 
 #### Requirements
 The OpenCL framework is required.
 
 #### Compile and run
-A Makefile has been provided. The application can be run as ```./mult``` without paramenters.
+A Makefile has been provided. The application can be run as ```./mult kernel_type``` where ```kernel_type``` can be 
+* ```0``` : execute kernel where each work-item computes a single element of ```C```, *global memory* only is used
+* ```1``` : execute kernel where each work-item computes a full row of ```C```, *global memory* only is used
+* ```2``` : execute kernel where each work-item computes a full row of ```C```, *global memory* is used to access ```B``` columns, *private memory* is used to access ```A``` row
+* ```3``` : execute kernel where each work-item computes a full row of ```C```, *local memory* is used to access ```B``` columns, *private memory* is used to access ```A``` row
 
 <br>
 
-## 05 -
-Implementation of
+## 05 - Optimized matrix multiplication (use of local memory)
+Oprimized version of the matrix multiplication program where local memory has been used to minimize memory movement costs and optimize performance.
 
 #### Requirements
 The OpenCL framework is required.
 
 #### Compile and run
-A Makefile has been provided. The application can be run as ```./vadd``` without paramenters.
+A Makefile has been provided. The application can be run as ```./mult``` with paramenter
+* ```0``` : sequential computation
+* ```1``` : one element per work-item
+* ```2``` : one row per work-item
+* ```3``` : one row per work-item, A row in private memory
+* ```4``` : one row per work-item, A row in private memory, B cols in local memory
 
 <br>
 
+<!--
 ## 06 -
 Implementation of
 
@@ -72,3 +82,5 @@ The OpenCL framework is required.
 
 #### Compile and run
 A Makefile has been provided. The application can be run as ```./vadd``` without paramenters.
+
+-->

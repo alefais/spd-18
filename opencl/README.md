@@ -56,8 +56,8 @@ A Makefile has been provided. The application can be run as ```./mult comp_type`
 * ```0``` : sequential computation
 * ```1``` : one element per work-item
 * ```2``` : one row per work-item
-* ```3``` : one row per work-item, A row in private memory
-* ```4``` : one row per work-item, A row in private memory, B cols in local memory
+* ```3``` : one row per work-item, ```A``` row in *private memory*
+* ```4``` : one row per work-item, ```A``` row in *private memory*, ```B``` columns in *local memory*
 
 <br>
 
